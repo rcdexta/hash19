@@ -1,5 +1,7 @@
 # Hash19
 
+[![Build Status](https://travis-ci.org/rcdexta/hash19.svg)](https://travis-ci.org/rcdexta/hash19)
+
 TODO: Write a gem description
 
 ## Installation
