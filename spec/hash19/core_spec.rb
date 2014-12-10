@@ -49,54 +49,6 @@ describe Hash19::Core do
     end
   end
 
-  context 'has_one associations' do
-    class Child < Testable
-      attributes :x, :y, :z
-    end
 
-    class Parent < Testable
-      attributes :p, :q
-      has_one :child
-    end
-
-    it 'should be able to load the has_one child associations' do
-      parent = Parent.new(p: 1, q: 2, child: {x: 1, p: 3})
-      expect(parent.to_h).to eq('p' => 1, 'q' => 2, 'child' => {'x' => 1})
-    end
-  end
-
-  context 'has_many associations' do
-    class Wheel < Testable
-      attributes :flat
-    end
-
-    class Bike < Testable
-      attributes :cc
-      has_many :wheels
-    end
-
-    it 'should be able to load the has_one child associations' do
-      bike = Bike.new(cc: 150, wheels: [{name: 'one', flat: false}, {name: 'two', flat: true}])
-      expect(bike.to_h).to eq('cc' => 150, 'wheels' => [{'flat' => false}, {'flat' => true}])
-    end
-  end
-
-  context 'across modules' do
-    module Bird
-      class Duck < Testable
-        attribute :quack
-        has_many :feathers
-      end
-
-      class Feather < Testable
-        attribute :light
-      end
-    end
-
-    it 'should be able to resolve has_many relationship within modules' do
-      duck = Bird::Duck.new(quack: true, feathers: [{light: true},{light: true}])
-      expect(duck.to_h).to eq('quack' => true, 'feathers' => [{'light' => true}, {'light' => true}])
-    end
-  end
 
 end

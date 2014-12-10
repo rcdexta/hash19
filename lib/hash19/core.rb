@@ -9,9 +9,36 @@ module Hash19
         resolve_aliases if self.class.aliases.present?
         resolve_has_one(hash) if self.class.one_assocs.present?
         resolve_has_many(hash) if self.class.many_assocs.present?
+        perform_injections(@hash19) if self.class.injections.present?
       end
 
       private
+
+      def resolve_has_one(hash)
+        resolve_associations(hash, self.class.one_assocs, :one)
+      end
+
+      def resolve_has_many(hash)
+        resolve_associations(hash, self.class.many_assocs, :many)
+      end
+
+      def resolve_associations(hash, associations, type)
+        associations.each do |name, opts|
+          class_name = name.to_s.camelize
+          association = hash[opts[:key] || name]
+          @hash19[opts[:alias] || name] = if association.present?
+                                            klass = resolve_class(class_name.singularize)
+                                            if type == :one
+                                              klass.send(:new, association).to_h
+                                            else
+                                              association.map { |hash| klass.send(:new, hash).to_h }
+                                            end
+                                          else
+                                            raise "Not key with name:<#{name}> present. Possible specify a trigger" unless opts[:trigger]
+                                            opts[:trigger].call(@hash19.delete(opts[:using]))
+                                          end
+        end
+      end
 
       def resolve_aliases
         self.class.aliases.each do |key, as|
@@ -19,28 +46,18 @@ module Hash19
         end
       end
 
-      def resolve_has_one(hash)
-        self.class.one_assocs.each do |name, opts|
-          class_name = name.to_s.camelize
-          association = hash[name]
-          if association.present?
-            klass = resolve_class(class_name)
-            @hash19[name] = klass.send(:new, association).to_h
-          else
-            @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
-          end
-        end
-      end
-
-      def resolve_has_many(hash)
-        self.class.many_assocs.each do |name, opts|
-          class_name = name.to_s.camelize
-          association = hash[name]
-          if association.present?
-            klass = resolve_class(class_name.singularize)
-            @hash19[name] = association.map { |hash| klass.send(:new, hash).to_h }
-          else
-            @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
+      def perform_injections(hash)
+        self.class.injections.each do |opts|
+          JsonPath.for(hash).gsub!(opts[:at]) do |entries|
+            ids = entries.map { |el| el[opts[:using]] }
+            to_inject = opts[:trigger].call(ids)
+            key = opts[:using].to_s.gsub(/_id/,'')
+            entries.each do |entry|
+              id = entry.delete(opts[:using])
+              target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
+              entry[key] = target
+            end
+            entries
           end
         end
       end
@@ -69,6 +86,7 @@ module Hash19
       attr_accessor :aliases
       attr_accessor :one_assocs
       attr_accessor :many_assocs
+      attr_accessor :injections
 
       def attributes(*list)
         add_attributes(*list)
@@ -76,15 +94,23 @@ module Hash19
 
       def attribute(name, opts = {})
         add_attributes(opts[:key] || name)
-        add_aliases(opts[:key], name) if opts.has_key?(:key)
+        @aliases ||= {}
+        @aliases[opts[:key]] = name  if opts.has_key?(:key)
       end
 
       def has_one(name, opts = {})
-        add_one_assoc(name, opts)
+        @one_assocs ||= {}
+        @one_assocs[name] = opts
       end
 
       def has_many(name, opts = {})
-        add_many_assoc(name, opts)
+        @many_assocs ||= {}
+        @many_assocs[name] = opts
+      end
+
+      def inject(opts)
+        @injections ||= []
+        @injections << opts
       end
 
       private
@@ -94,20 +120,6 @@ module Hash19
         @keys += list
       end
 
-      def add_aliases(name, alias_name)
-        @aliases ||= {}
-        @aliases[name] = alias_name
-      end
-
-      def add_one_assoc(name, opts)
-        @one_assocs ||= {}
-        @one_assocs[name] = opts
-      end
-
-      def add_many_assoc(name, opts)
-        @many_assocs ||= {}
-        @many_assocs[name] = opts
-      end
     end
   end
 end
