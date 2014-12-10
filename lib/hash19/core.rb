@@ -24,7 +24,7 @@ module Hash19
           class_name = name.to_s.camelize
           association = hash[name]
           if association.present?
-            klass = Module.const_get(class_name)
+            klass = resolve_class(class_name)
             @hash19[name] = klass.send(:new, association).to_h
           else
             @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
@@ -37,7 +37,7 @@ module Hash19
           class_name = name.to_s.camelize
           association = hash[name]
           if association.present?
-            klass = Module.const_get(class_name)
+            klass = resolve_class(class_name.singularize)
             @hash19[name] = association.map { |hash| klass.send(:new, hash).to_h }
           else
             @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
@@ -45,6 +45,14 @@ module Hash19
         end
       end
 
+    end
+
+    def resolve_class(assoc_name)
+      full_class_name = self.class.name
+      new_class = full_class_name.gsub(full_class_name.demodulize, assoc_name)
+      new_class.split('::').inject(Object) do |mod, class_name|
+        mod.const_get(class_name)
+      end
     end
 
     def self.included(klass)
@@ -61,7 +69,6 @@ module Hash19
       attr_accessor :aliases
       attr_accessor :one_assocs
       attr_accessor :many_assocs
-
 
       def attributes(*list)
         add_attributes(*list)
