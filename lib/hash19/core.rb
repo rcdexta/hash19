@@ -20,18 +20,28 @@ module Hash19
       end
 
       def resolve_has_one(hash)
-        self.class.one_assocs.each do |name|
+        self.class.one_assocs.each do |name, opts|
           class_name = name.to_s.camelize
-          klass = Module.const_get(class_name)
-          @hash19[name] = klass.send(:new, hash[name]).to_h
+          association = hash[name]
+          if association.present?
+            klass = Module.const_get(class_name)
+            @hash19[name] = klass.send(:new, association).to_h
+          else
+            @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
+          end
         end
       end
 
       def resolve_has_many(hash)
-        self.class.many_assocs.each do |name|
+        self.class.many_assocs.each do |name, opts|
           class_name = name.to_s.camelize
-          klass = Module.const_get(class_name)
-          @hash19[name] = hash[name].map { |hash| klass.send(:new, hash).to_h }
+          association = hash[name]
+          if association.present?
+            klass = Module.const_get(class_name)
+            @hash19[name] = association.map { |hash| klass.send(:new, hash).to_h }
+          else
+            @hash19[name] = opts[:trigger].call(@hash19.delete(opts[:using]))
+          end
         end
       end
 
@@ -63,11 +73,11 @@ module Hash19
       end
 
       def has_one(name, opts = {})
-        add_one_assoc(name)
+        add_one_assoc(name, opts)
       end
 
       def has_many(name, opts = {})
-        add_many_assoc(name)
+        add_many_assoc(name, opts)
       end
 
       private
@@ -82,14 +92,14 @@ module Hash19
         @aliases[name] = alias_name
       end
 
-      def add_one_assoc(name)
-        @one_assocs ||= []
-        @one_assocs << name
+      def add_one_assoc(name, opts)
+        @one_assocs ||= {}
+        @one_assocs[name] = opts
       end
 
-      def add_many_assoc(name)
-        @many_assocs ||= []
-        @many_assocs << name
+      def add_many_assoc(name, opts)
+        @many_assocs ||= {}
+        @many_assocs[name] = opts
       end
     end
   end
