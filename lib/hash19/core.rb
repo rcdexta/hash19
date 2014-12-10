@@ -51,7 +51,7 @@ module Hash19
           JsonPath.for(hash).gsub!(opts[:at]) do |entries|
             ids = entries.map { |el| el[opts[:using]] }
             to_inject = opts[:trigger].call(ids)
-            key = opts[:using].to_s.gsub(/_id/,'')
+            key = opts[:using].to_s.gsub(/_id$|Id$/,'')
             entries.each do |entry|
               id = entry.delete(opts[:using])
               target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
