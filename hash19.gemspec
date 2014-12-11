@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Hash19::VERSION
   spec.authors       = ['RC']
   spec.email         = ['rc.chandru@gmail.com']
-  spec.summary       = %q{Hash helpers to map complex JSON to ruby objects}
-  spec.description   = %q{Handles associations and eager loading and collection injection }
-  spec.homepage      = ''
+  spec.summary       = %q{Hash helpers to map complex JSON to ruby objects. Handles associations and eager loading and collection injection}
+  spec.description   = %q{Hash helpers to map complex JSON to ruby objects. Handles associations and eager loading and collection injection }
+  spec.homepage      = 'https://github.com/rcdexta/hash19'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
