@@ -1,5 +1,5 @@
 module Hash19
-  module AssociationHelpers
+  module Resolvers
 
     def resolve_has_one(hash)
       resolve_associations(hash, self.class.one_assocs, :one)
@@ -17,12 +17,12 @@ module Hash19
                                           klass = resolve_class(class_name.singularize)
                                           if type == :one
                                             klass.send(:new, association).to_h
-                                          else
+                                          elsif type == :many
                                             association.map { |hash| klass.send(:new, hash).to_h }
                                           end
                                         else
-                                          raise "No key with name:<#{name}> present. Possible specify a trigger" unless opts[:trigger]
-                                          opts[:trigger].call(@hash19.delete(opts[:using]))
+                                          raise "Key:<#{name}> is not present. Possible specify a trigger" unless opts[:trigger]
+                                          Lazy.new -> { opts[:trigger].call(@hash19.delete(opts[:using])) }
                                         end
       end
     end
@@ -33,7 +33,7 @@ module Hash19
       end
     end
 
-    def perform_injections(hash)
+    def resolve_injections(hash)
       self.class.injections.each do |opts|
         entries = JsonPath.new(opts[:at]).on(hash).flatten
         ids = entries.map { |el| el[opts[:using]] }

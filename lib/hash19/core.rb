@@ -7,7 +7,7 @@ module Hash19
       include Hash19::CoreHelpers
     end
 
-    include Hash19::AssociationHelpers
+    include Hash19::Resolvers
 
     module Initializer
       def initialize(payload={})
@@ -23,7 +23,7 @@ module Hash19
           resolve_has_one(hash) if self.class.one_assocs.present?
           resolve_has_many(hash) if self.class.many_assocs.present?
         end
-        perform_injections(@hash19) if self.class.injections.present?
+        resolve_injections(@hash19) if self.class.injections.present?
       end
     end
 
@@ -32,9 +32,16 @@ module Hash19
     end
 
     def to_h
-      @hash19
+      @hash19.each_with_object({}) do |(k,v),res|
+        res[k] = if v.is_a?(Lazy)
+                   v.value
+                 elsif v.is_a?(Hash19)
+                   v.to_h
+                 else
+                   v
+                 end
+      end.with_indifferent_access
     end
-
 
   end
 end
