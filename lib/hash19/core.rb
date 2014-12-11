@@ -43,10 +43,12 @@ module Hash19
     private
     def traverse_hash(hash)
       hash.each_with_object({}) do |(k,v),res|
-        res[k] = if v.is_a?(Lazy)
+        res[k] = if v.is_a?(LazyValue)
                    v.value
                  elsif v.is_a?(Hash19)
                    v.to_h
+                 elsif v.is_a?(Hash)
+                   traverse_hash(v)
                  else
                    v
                  end

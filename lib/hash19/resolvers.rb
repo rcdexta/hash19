@@ -13,17 +13,17 @@ module Hash19
       associations.each do |name, opts|
         class_name = name.to_s.camelize
         association = hash[opts[:key] || name]
-        @hash19[opts[:alias] || name] = if association.present?
-                                          klass = resolve_class(class_name.singularize)
-                                          if type == :one
-                                            klass.send(:new, association).to_h
+        if association.present?
+          klass = resolve_class(class_name.singularize)
+          @hash19[opts[:alias] || name] = if type == :one
+                                            klass.send(:new, association).to_h(lazy: true)
                                           elsif type == :many
-                                            association.map { |hash| klass.send(:new, hash).to_h }
+                                            association.map { |hash| klass.send(:new, hash).to_h(lazy: true) }
                                           end
-                                        else
-                                          raise "Key:<#{name}> is not present. Possible specify a trigger" unless opts[:trigger]
-                                          Lazy.new -> { opts[:trigger].call(@hash19.delete(opts[:using])) }
-                                        end
+        else
+          # raise "Key:<#{name}> is not present in #{self.class.name}. Possible specify a trigger" unless
+          @hash19[opts[:alias] || name] = LazyValue.new(-> { opts[:trigger].call(@hash19.delete(opts[:using])) }) if opts[:trigger]
+        end
       end
     end
 
@@ -34,15 +34,19 @@ module Hash19
     end
 
     def resolve_injections(hash)
-      self.class.injections.each do |opts|
-        entries = JsonPath.new(opts[:at]).on(hash).flatten
-        ids = entries.map { |el| el[opts[:using]] }
-        to_inject = opts[:trigger].call(ids).map(&:with_indifferent_access)
-        key = opts[:using].to_s.gsub(/_id$|Id$/, '')
-        entries.each do |entry|
-          id = entry.delete(opts[:using])
-          target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
-          entry[key] = target
+      together do
+        self.class.injections.each do |opts|
+          async do
+            entries = JsonPath.new(opts[:at]).on(hash).flatten
+            ids = entries.map { |el| el[opts[:using]] }
+            to_inject = opts[:trigger].call(ids).map(&:with_indifferent_access)
+            key = opts[:as] || opts[:using].to_s.gsub(/_id$|Id$/, '')
+            entries.each do |entry|
+              id = entry.delete(opts[:using])
+              target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
+              entry[key] = target
+            end
+          end
         end
       end
     end

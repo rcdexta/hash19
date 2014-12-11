@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Hash19::Lazy do
+describe Hash19::LazyValue do
 
   class Sheep
     attr_accessor :name
@@ -11,7 +11,7 @@ describe Hash19::Lazy do
 
   it 'should be able to postpone execution of a block' do
     sheep = Sheep.new
-    delayed_voice = Hash19::Lazy.new(-> { sheep.shout })
+    delayed_voice = Hash19::LazyValue.new(-> { sheep.shout })
     sheep.name = 'Dolly'
     expect(delayed_voice.value).to eq('My name is Dolly')
   end

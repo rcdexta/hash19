@@ -11,7 +11,7 @@ describe 'Injections' do
     class SuperVillain < Testable
       attribute :name
       has_many :minions
-      inject at: '$.minions', using: :fruit_id, reference: :id, trigger: lambda { |ids| Fruit.find_all ids }
+      inject at: '$.minions', using: :fruit_id, reference: :id, trigger: lambda { |ids| Fruit.find_all ids }, as: 'eats'
     end
 
     class Minion < Testable
@@ -31,9 +31,9 @@ describe 'Injections' do
       gru_team = SuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom', fruit_id: 1},
                                                          {name: 'Gelato', fruit_id: 2},
                                                          {name: 'Kanpai', fruit_id: 3}])
-      expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom', 'fruit' => {'id' => 1, 'name' => 'banana'}},
-                                                                 {'name' => 'Gelato', 'fruit' => {'id' => 2, 'name' => 'apple'}},
-                                                                 {'name' => 'Kanpai', 'fruit' => {'id' => 3, 'name' => 'orange'}}
+      expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom', 'eats' => {'id' => 1, 'name' => 'banana'}},
+                                                                 {'name' => 'Gelato', 'eats' => {'id' => 2, 'name' => 'apple'}},
+                                                                 {'name' => 'Kanpai', 'eats' => {'id' => 3, 'name' => 'orange'}}
                                                  ])
     end
   end

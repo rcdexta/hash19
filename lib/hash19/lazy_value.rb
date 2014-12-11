@@ -1,5 +1,5 @@
 module Hash19
-  class Lazy
+  class LazyValue
     def initialize(callable)
       @block = callable
     end
