@@ -19,21 +19,15 @@ describe 'Containers' do
   class Weapon < Testable
     attributes :name, :id
 
-    def self.find(id)
-      case id
-        when 1
-          {'name' => 'jarvis', 'id' => 1}
-        when 2
-          {'name' => 'hammer', 'id' => 2}
-        when 3
-          {'name' => 'hands', 'id' => 3}
-      end
-
+    def self.find_all(ids)
+      [{'name' => 'jarvis', 'id' => 1},
+       {'name' => 'hammer', 'id' => 2},
+       {'name' => 'hands', 'id' => 3}]
     end
   end
 
   context 'contains directive' do
-    xit 'should comprise of collection of specified object' do
+    it 'should comprise of collection of specified object' do
       super_heroes = SuperHeroes.new([{name: 'iron man', power: 'none', weapon_id: 1},
                                       {name: 'thor', power: 'class 100', weapon_id: 2},
                                       {name: 'hulk', power: 'bulk', weapon_id: 3}])
@@ -42,6 +36,6 @@ describe 'Containers' do
                                        {'name' => 'thor', 'power' => 'class 100', 'weapon' => {'name' => 'hammer', 'id' => 2}},
                                        {'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}])
     end
-  end
 
+  end
 end

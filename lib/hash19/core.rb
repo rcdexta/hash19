@@ -14,7 +14,7 @@ module Hash19
         if self.class.contains_klass
           @hash19 = payload.map do |el|
             klass = resolve_class(self.class.contains_klass.to_s.camelize.singularize)
-            klass.send(:new, el).to_h
+            klass.send(:new, el).to_h(lazy: true)
           end
         else
           hash = payload.with_indifferent_access
@@ -31,8 +31,18 @@ module Hash19
       klass.send :prepend, Initializer
     end
 
-    def to_h
-      @hash19.each_with_object({}) do |(k,v),res|
+    def to_h(lazy:false)
+      return @hash19 if lazy
+      if @hash19.is_a? Array
+        @hash19.map { |hash| traverse_hash(hash) }
+      else
+        traverse_hash(@hash19)
+      end
+    end
+
+    private
+    def traverse_hash(hash)
+      hash.each_with_object({}) do |(k,v),res|
         res[k] = if v.is_a?(Lazy)
                    v.value
                  elsif v.is_a?(Hash19)

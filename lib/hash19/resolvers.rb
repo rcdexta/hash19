@@ -37,7 +37,7 @@ module Hash19
       self.class.injections.each do |opts|
         entries = JsonPath.new(opts[:at]).on(hash).flatten
         ids = entries.map { |el| el[opts[:using]] }
-        to_inject = opts[:trigger].call(ids)
+        to_inject = opts[:trigger].call(ids).map(&:with_indifferent_access)
         key = opts[:using].to_s.gsub(/_id$|Id$/, '')
         entries.each do |entry|
           id = entry.delete(opts[:using])
