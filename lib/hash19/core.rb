@@ -31,6 +31,10 @@ module Hash19
       klass.send :prepend, Initializer
     end
 
+    def [](key)
+      @hash19[key]
+    end
+
     def to_h(lazy:false)
       return @hash19 if lazy
       if @hash19.is_a? Array
