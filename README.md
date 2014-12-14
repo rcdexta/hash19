@@ -34,19 +34,36 @@ Or install it yourself as:
 ### See it all in this example
 ```ruby
 class Jedi
-     include Hash19
-	 attributes :name, :saber, :padawan_id
-	 attribute :master, key: :trained_by
-	 has_one :padawan, using: :padawan_id, trigger: ->(id) { Padawan.find id }
-	 has_many :killings
+    include Hash19
+    attributes :name, :saber, :padawan_id
+    attribute :master, key: :trained_by
+    has_one :padawan, using: :padawan_id, trigger: ->(id) { Padawan.find id }
+    has_many :killings
 end
-class Jedis
-    contains :jedi
-    inject at: '$.jedi', using: :padawan_id, reference: :id, trigger: lambda { |ids| Padawan.find_all ids }, as: 'padawan'
+class Padawan
+    include Hash19
+    attributes :id, :name
+    def find(id)..end #implementation hidden
+    def find_all(ids)..end #implementation hidden
 end
+
+json = '[{"name": "Anakin Skywalker", "saber": "Single Blade Blue",  "trained_by": "Obi Wan",
+         "padawan": {"id": 201, "name": "Ahsoka Tano"}},
+        {"name": "Mace Windu", "saber": "Single Blade Violet", "padawan_id": 132, "trained_by": "Yoda"}]'
+        
+jedis = JSON.parse(json)    
+Jedi.new(jedis.first).to_h #{"name"=>"Anakin Skywalker", "saber"=>"Single Blade Blue", "master"=>"Obi Wan",
+                           #"padawan"=>{"id"=>201, "name"=>"Ahsoka Tano"}}
+                           
+Jedi.new(jedis.last).to_h #{"name"=>"Mace Windu", "saber"=>"Single Blade Violet", "master"=>"Yoda",
+                           #"padawan"=>{"id"=>132, "name"=>"Depa Billaba["}}
+
 ```
 All aspects of the code are explained with detailed examples below. This gives a quick glance of what can the gem can do. So.
 * the attributes `name`, `saber` and `padawan_id` have been whitelisted. Any other attribute in the root of the JSON will be ignored
+* the attributes can have aliases in the actual JSON
+* there can be an inline relationship within the JSON with anothe entity. For example, each `Jedi` entity can contain a `padawan` object. If the association already exists, it will be transformed.
+* All associations are lazy loaded. The first call to the attribute will call the trigger to fetch the association if not present. In this case, a call to `find` method of Padawan will be triggered and the association fetched.
 
 ###1. Whitelisting attributes
 
