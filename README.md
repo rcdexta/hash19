@@ -3,7 +3,7 @@
 
 ![Hash-19](https://s3-us-west-1.amazonaws.com/rcdexta/hash-19-droid.png)
 
-*Hash-19 is as an assassin droid in the Star Wars Universe. These are durasteel drones uploaded with only the most archaic kill programs.*
+>*Hash-19 is as an assassin droid in the Star Wars Universe. These are durasteel drones uploaded with only the most archaic kill programs* <sup>[Wookieepedia]</sup>
 
 Ahem.. Ahem.. So about this gem itself.. When I was writing an aggregation API that had to talk to multiple services each with their own REST end-points and JSON schema, when mashing up multiple hashes and transforming it to a structure acceptable to the consumer, I ended up writing lot of boiler plate code. I could see patterns and there was clearly scope for optimisation.
 
@@ -186,7 +186,9 @@ super_heroes.to_h #[{'name' => 'iron man', 'power' => 'none', 'weapon' => {'name
                   #{'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}
 ```
 
-Note that `injection` always overrides the association trigger sinces the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls
+Note that `injection` always overrides the association trigger sinces the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls.
+
+Please refer to the [tests](https://github.com/rcdexta/hash19/tree/master/spec/hash19) for more examples and documentation.
 
 ## Contributing
 
