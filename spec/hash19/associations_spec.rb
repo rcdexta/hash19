@@ -21,7 +21,19 @@ describe 'Associations' do
       expect(parent.to_h).to eq('p' => 1, 'q' => 2, 'child' => {'x' => 1})
     end
 
-    it 'should support key for has_one' do
+    it 'should flag error when target class not present' do
+      module Computer
+        class Laptop < Testable
+          attributes :model, :year
+          has_one :keyboard
+        end
+      end
+
+      expect { Computer::Laptop.new(model: 'MacBook Pro', year: 2013, keyboard: {keys: 101}) }.
+      to raise_error('Class:<Computer::Keyboard> not defined! Unable to resolve association:<keyboard>')
+    end
+
+    it 'should support alternate key in payload for has_one' do
       class OtherParent < Testable
         attributes :x
         has_one :child, key: :offspring, class: 'Child'
@@ -31,7 +43,7 @@ describe 'Associations' do
       expect(parent.to_h).to eq('x' => true, 'child' => {'x' => 1})
     end
 
-    it 'should support alias for has_one' do
+    it 'should support association alias for has_one' do
       class AnotherParent < Testable
         attributes :x
         has_one :child, key: :offspring, alias: :junior
@@ -57,7 +69,7 @@ describe 'Associations' do
       expect(bike.to_h).to eq('cc' => 150, 'wheels' => [{'flat' => false}, {'flat' => true}])
     end
 
-    it 'should support key for has_many' do
+    it 'should support alternate key in payload for has_many' do
       class OtherBike < Testable
         attributes :cc
         has_many :wheels, key: :discs
@@ -67,7 +79,7 @@ describe 'Associations' do
       expect(bike.to_h).to eq('cc' => 150, 'wheels' => [{'flat' => false}, {'flat' => true}])
     end
 
-    it 'should support alias for has_many' do
+    it 'should support association alias for has_many' do
       class AnotherBike < Testable
         attributes :cc
         has_many :wheels, key: :discs, alias: :rings
@@ -91,8 +103,8 @@ describe 'Associations' do
     end
 
     it 'should be able to resolve has_many relationship within modules' do
-      duck = Bird::Duck.new(quack: true, feathers: [{light: true}, {light: true}])
-      expect(duck.to_h).to eq('quack' => true, 'feathers' => [{'light' => true}, {'light' => true}])
+      duck = Bird::Duck.new(quack: true, feathers: [{light: true}, {light: false}])
+      expect(duck.to_h).to eq('quack' => true, 'feathers' => [{'light' => true}, {'light' => false}])
     end
   end
 
@@ -132,10 +144,21 @@ describe 'Associations' do
     it 'should be able to call the trigger on has_one association' do
       packet = UDPPacket.new(code: 500, error_id: 500)
       expect(packet.to_h).to eq('code' => 500, 'error_id' => 500, 'all_errors' => [{'error_id' => 500, 'desc' => 'fatal error'},
-                                                                           {'error_id' => 404, 'desc' => 'not found'}])
+       {'error_id' => 404, 'desc' => 'not found'}])
     end
 
   end
 
+  context 'no id to lookup' do
+    it 'should not fail if association key is not present' do
+      class Jedi < Testable
+        attributes :name
+        has_one :padawan, using: :padawan_id, trigger: ->(id) { Padawan.find }
+      end
+
+      jedi = Jedi.new(name: 'Obi Wan Kenobi')
+      expect(jedi.to_h).to eq({"name" => 'Obi Wan Kenobi'})
+    end
+  end
 
 end

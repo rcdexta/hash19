@@ -13,3 +13,6 @@
 *.a
 mkmf.log
 .idea
+.gemtags
+.tags
+.tags_sorted_by_file

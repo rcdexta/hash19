@@ -11,7 +11,7 @@ module Hash19
 
     module Initializer
       def initialize(payload={})
-        if self.class.contains_klass
+        if payload.is_a? Array
           @hash19 = payload.map do |el|
             klass = resolve_class(self.class.contains_klass.to_s.camelize.singularize)
             klass.send(:new, el).to_h(lazy: true)
