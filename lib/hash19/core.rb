@@ -31,8 +31,12 @@ module Hash19
       klass.send :prepend, Initializer
     end
 
-    def [](key)
-      @hash19[key]
+    def method_missing(m, *args, &block)  
+      if @hash19.respond_to? m
+        @hash19.send(m, *args, &block)
+      else
+        super
+      end
     end
 
     def to_h(lazy:false)
