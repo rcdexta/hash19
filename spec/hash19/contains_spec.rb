@@ -37,5 +37,10 @@ describe 'Containers' do
                                        {'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}])
     end
 
+    it 'should not fail when container is empty' do
+      super_heroes = SuperHeroes.new([])
+      expect(super_heroes.to_h).to eq([])
+    end
+
   end
 end

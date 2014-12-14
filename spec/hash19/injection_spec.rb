@@ -36,6 +36,27 @@ describe 'Injections' do
                                                                  {'name' => 'Kanpai', 'eats' => {'id' => 3, 'name' => 'orange'}}
                                                  ])
     end
+
+    it "should not fail when no keys for injection present" do
+      gru_team = SuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom'},
+                                                         {name: 'Gelato'},
+                                                         {name: 'Kanpai'}])
+      expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom'},
+                                                                 {'name' => 'Gelato'},
+                                                                 {'name' => 'Kanpai'}
+                                                 ])
+    end
+
+    it "should only map associations with keys" do
+      gru_team = SuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom', fruit_id: 1},
+                                                         {name: 'Gelato'},
+                                                         {name: 'Kanpai'}])
+      expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom', 'eats' => {'id' => 1, 'name' => 'banana'}},
+                                                                 {'name' => 'Gelato'},
+                                                                 {'name' => 'Kanpai'}
+                                                 ])
+    end
+
   end
 
 end
