@@ -5,7 +5,7 @@
 
 *Hash-19 is as an assassin droid in the Star Wars Universe. These are durasteel drones uploaded with only the most archaic kill programs.*
 
-Ahem.. Ahem.. So about this gem itself.. When I was writing an aggregation API that had to talk to multiple services each with their own REST end-points and when mashing up the JSON payload in a form acceptable to consumer, I ended up writing lot of boiler plate code. I could see patterns and there was clearly scope for optimisation.
+Ahem.. Ahem.. So about this gem itself.. When I was writing an aggregation API that had to talk to multiple services each with their own REST end-points and JSON schema, when mashing up multiple hashes and transforming it to a structure acceptable to the consumer, I ended up writing lot of boiler plate code. I could see patterns and there was clearly scope for optimisation.
 
 Hash19 is an attempt at offering a DSL to tame the JSON manipulation and help in dealing with common use-cases. The features include
 
@@ -59,11 +59,11 @@ Jedi.new(jedis.last).to_h #{"name"=>"Mace Windu", "saber"=>"Single Blade Violet"
                            #"padawan"=>{"id"=>132, "name"=>"Depa Billaba["}}
 
 ```
-All aspects of the code are explained with detailed examples below. This gives a quick snapshot of what the gem can do. So.
+All aspects of the code are explained with detailed examples below. This gives a quick snapshot of what the gem can do. Ergo...
 * the attributes `name`, `saber` and `padawan_id` have been whitelisted. Any other attribute in the JSON will be ignored
 * the attributes can have aliases in the actual JSON
 * there can be an inline relationship within the JSON with another entity. For example, each `Jedi` entity can contain a `padawan` object. If the association already exists, it will be transformed. This is true for the first Jedi in the example
-* If the association is not present in the JSON, it is lazy loaded. The first call to the attribute will call the trigger to fetch the association if not present. In this case, for the second Jedi, a call to `find` method of Padawan will be triggered and the association fetched.
+* If the association is not present in the JSON, it is lazy loaded. The first call to the attribute will call the trigger to fetch the association, if not present. In this case, for the second Jedi, a call `Padawan#find` will be triggered and the association fetched.
 
 Now, this immediately raises the question about firing multiple calls to Padawan#find when there are many entries without the association populated. And that's where injection is recommended:
 
@@ -75,10 +75,13 @@ class Jedis
            trigger: lambda { |ids| Padawan.find_all ids }, as: 'padawan'
 end
 ```
-This is like a wrapper class for the Jedi collection. It collects all `padawan_ids` from the complete JSON, calls `Padawan#find_all`, the bulk-api equivalent of `find`, with a list of ids and injects the content back to the main collection at appropriate places as defined by the json_path in `at`
+This is like a wrapper class for the Jedi collection. It collects all `padawan_ids` from the complete JSON, calls `Padawan#find_all` once, the bulk-api equivalent of `find`, with a list of ids and injects the content back to the main collection at appropriate places as defined by the json_path in `at`
 
 ## Usage
-A detailed documenation of all features can be found below:
+
+To get started, include the Hash19 module in the target class and you are good.
+
+A detailed documentation of all features can be found below:
 
 ###1. Whitelisting attributes
 ```ruby
@@ -114,7 +117,7 @@ The Hash19 object acts as a wrapper to Ruby Hash. All hash operations are suppor
  hero.to_h #{"name"=>"Flash", "strength"=>"Speed", "universe"=>"DC", "nick_name"=>"Scarlet Speedster"}
 ```
 ###3. Associations
-One-to-one and One-to-many relationships are supported. All associations are lazy loaded unless present directly in the Root Json.
+One-to-one and One-to-many relationships are supported. All associations are lazy loaded unless present directly in the root JSON.
 ```ruby
 class Hashable
     include Hash19
@@ -167,7 +170,7 @@ class SuperHeroes < Hashable
     def find_all(ids)..end #calls bulk API across wire. Implementation hidden
   end
 ```
-If you notice, `SuperHeroes` is a wrapper class around 'SuperHero`. This is the JSON equivalent of a collection. The `inject` method will extract `weapon_id` from all items in the collection and call the `trigger` and put back the resultant entities joining `superhero.weapon_id` and `weapon.id`
+If you notice, `SuperHeroes` is a wrapper class around `SuperHero`. This is the object equivalent of a JSON collection. The `inject` method will extract `weapon_id` from all items in the collection and call the `trigger` and put back the resultant entities joining `superhero.weapon_id` and `weapon.id`
 
 So, a json like below
 ```json
@@ -176,14 +179,14 @@ super_heroes = SuperHeroes.new([{name: 'iron man', power: 'none', weapon_id: 1},
                                 {name: 'hulk', power: 'bulk', weapon_id: 3}])
 ```
 
-will lead to one call to `Weapon#find_all` with params `[1,2,3]` to fetch all weapon details. And the final object will be of the form:
+will lead to one call to `Weapon#find_all` with params `[1,2,3]` to fetch all weapon details. And the final collection will be of the form:
 ```ruby
 super_heroes.to_h #[{'name' => 'iron man', 'power' => 'none', 'weapon' => {'name' => 'jarvis', 'id' => 1}},
                   #{'name' => 'thor', 'power' => 'class 100', 'weapon' => {'name' => 'hammer', 'id' => 2}},
                   #{'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}
 ```
 
-Note that an `injection` always overrides an association trigger sinces the former is eager loaded and latter is lazy loaded that avoiding the `N+1` calls
+Note that `injection` always overrides the association trigger sinces the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls
 
 ## Contributing
 
