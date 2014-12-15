@@ -43,8 +43,8 @@ describe Hash19::Core do
    end
 
    it 'should be able to assign attributes based on alias' do
-    test = Test2.new(actual: 1)
-    expect(test.to_h).to eq('fake' => 1)
+    test = Test2.new("actual" => 1, "d" => 2)
+    expect(test.to_h).to eq('fake' => 1, "d" => 2)
   end
 
   it 'should be able to use both attribute and attributes constructs' do
