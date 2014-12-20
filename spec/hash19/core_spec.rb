@@ -37,25 +37,41 @@ describe Hash19::Core do
   context 'Single attribute and aliases' do
 
     class Test2 < Testable
-     attributes :a, :b, :c
-     attribute :fake, key: :actual
-     attribute :d
-   end
+      attributes :a, :b, :c
+      attribute :fake, key: :actual
+      attribute :d
+    end
 
-   it 'should be able to assign attributes based on alias' do
-    test = Test2.new("actual" => 1, "d" => 2)
-    expect(test.to_h).to eq('fake' => 1, "d" => 2)
+    it 'should be able to assign attributes based on alias' do
+      test = Test2.new("actual" => 1, "d" => 2)
+      expect(test.to_h).to eq('fake' => 1, "d" => 2)
+    end
+
+    it 'should be able to use both attribute and attributes constructs' do
+      test = Test2.new(actual: 1, a: 2, d: 3)
+      expect(test.to_h).to eq('fake' => 1, 'a' => 2, 'd' => 3)
+    end
+
+    it 'should ignore alias if key not present' do
+      test = Test2.new(a: 2)
+      expect(test.to_h).to eq('a' => 2)
+    end
   end
 
-  it 'should be able to use both attribute and attributes constructs' do
-    test = Test2.new(actual: 1, a: 2, d: 3)
-    expect(test.to_h).to eq('fake' => 1, 'a' => 2, 'd' => 3)
-  end
+  context 'alias and key play' do
+    class AliasPlay < Testable
+      attribute :original, key: :alias
+    end
 
-  it 'should ignore alias if key not present' do
-    test = Test2.new(a: 2)
-    expect(test.to_h).to eq('a' => 2)
+    it 'should be able to resolve alias' do
+      ap = AliasPlay.new('alias' => 1)
+      expect(ap.to_h).to eq('original' => 1)
+    end
+
+    it 'should be able to resolve original if alias not found >:)' do
+      ap = AliasPlay.new('original' => 1)
+      expect(ap.to_h).to eq('original' => 1)
+    end
   end
-end
 
 end

@@ -13,9 +13,12 @@ module Hash19
     end
 
     def attribute(name, opts = {})
-      add_attributes(opts[:key] || name)
-      @aliases ||= {}
-      @aliases[opts[:key]] = name if opts.has_key?(:key)
+      add_attributes(name)
+      if opts.has_key?(:key)
+        @aliases ||= {}
+        @aliases[opts[:key]] = name
+        add_attributes(opts[:key])
+      end
     end
 
     def has_one(name, opts = {})
