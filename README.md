@@ -150,6 +150,14 @@ end
 ```
 If you notice the trigger, the `using` parameter denotes the attribute to use to fetch the association and the lambda passed to `trigger` will be invoked to fetch the association. This is lazy loaded, in the sense when a call is made to `.doctor` or `.to_h`, the trigger is fired.
 
+Associations also support alternate keys and aliasing... The below code snippet illustrates use of a different key in source json, the class to use to construct the object and the alias key in the target.
+
+```ruby
+has_one :child, key: :offspring, alias: :junior
+{offspring: {name: 'Luke Skywalker'}} # will be parsed as {'junior' => {'name' => 'Luke Skywalker'}}
+```
+
+
 ###4. Bulk Injections
 
 Left to itself with associations, when the root JSON is a large collection with none of the associations populated in the first place, there will several triggers fired for each item in the collection. This is the HTTP equivalent of `N+1` in the ORM world. To avoid this, Hash19 supports association injections. Let's dive into an example:
@@ -173,10 +181,10 @@ class SuperHeroes < Hashable
 If you notice, `SuperHeroes` is a wrapper class around `SuperHero`. This is the object equivalent of a JSON collection. The `inject` method will extract `weapon_id` from all items in the collection and call the `trigger` and put back the resultant entities joining `superhero.weapon_id` and `weapon.id`
 
 So, a json like below
-```json
-super_heroes = SuperHeroes.new([{name: 'iron man', power: 'none', weapon_id: 1},
-                                {name: 'thor', power: 'class 100', weapon_id: 2},
-                                {name: 'hulk', power: 'bulk', weapon_id: 3}])
+```ruby
+super_heros = SuperHeroes.new([{name: 'iron man', power: 'none', weapon_id: 1},
+				{name: 'thor', power: 'class 100', weapon_id: 2},
+				{name: 'hulk', power: 'bulk', weapon_id: 3}])
 ```
 
 will lead to one call to `Weapon#find_all` with params `[1,2,3]` to fetch all weapon details. And the final collection will be of the form:
