@@ -7,6 +7,8 @@
 
 Ahem.. Ahem.. So about this gem itself.. When I was writing an aggregation API that had to talk to multiple services each with their own REST end-points and JSON schema, when mashing up multiple hashes and transforming it to a structure acceptable to the consumer, I ended up writing lot of boiler plate code. I could see patterns and there was clearly scope for optimisation.
 
+A [detailed writeup](https://medium.com/@rcdexta/hash19-a-json-aggregation-library-f2ef43d64a86) explaining the need is available for reading.
+
 Hash19 is an attempt at offering a DSL to tame the JSON manipulation and help in dealing with common use-cases. The features include
 
 * whitelisting attributes
@@ -160,7 +162,7 @@ has_one :child, key: :offspring, alias: :junior
 
 ###4. Bulk Injections
 
-Left to itself with associations, when the root JSON is a large collection with none of the associations populated in the first place, there will several triggers fired for each item in the collection. This is the HTTP equivalent of `N+1` in the ORM world. To avoid this, Hash19 supports association injections. Let's dive into an example:
+Left to itself with associations, when the root JSON is a large collection with none of the associations populated in the first place, there will be several triggers fired for each item in the collection. This is the HTTP equivalent of `N+1` in the ORM world. To avoid this, Hash19 supports association injections. Let's dive into an example:
 
 ```ruby
 class SuperHeroes < Hashable
@@ -178,7 +180,7 @@ class SuperHeroes < Hashable
     def find_all(ids)..end #calls bulk API across wire. Implementation hidden
   end
 ```
-If you notice, `SuperHeroes` is a wrapper class around `SuperHero`. This is the object equivalent of a JSON collection. The `inject` method will extract `weapon_id` from all items in the collection and call the `trigger` and put back the resultant entities joining `superhero.weapon_id` and `weapon.id`
+If you notice, `SuperHeroes` is a wrapper class around `SuperHero`. This is the object equivalent of a JSON collection. The `inject` method will extract `weapon_id` from all items in the collection based on the json-path specified by `at` and call the `trigger` and put back the resultant entities joining `superhero.weapon_id` and `weapon.id`
 
 So, a json like below
 ```ruby
@@ -194,7 +196,7 @@ super_heroes.to_h #[{'name' => 'iron man', 'power' => 'none', 'weapon' => {'name
                   #{'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}
 ```
 
-Note that `injection` always overrides the association trigger sinces the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls. 
+Note that `injection` always overrides the association trigger since the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls. 
 
 One other important thing to remember is that all the injections will happen in parallel. Hash19 uses [eldritch](https://github.com/beraboris/eldritch) gem to trigger multiple injections concurrently.
 
