@@ -1,5 +1,7 @@
 # Hash19
 [![Build Status](https://travis-ci.org/rcdexta/hash19.svg)](https://travis-ci.org/rcdexta/hash19)
+[![Gem Version](https://badge.fury.io/rb/hash19.svg)](http://badge.fury.io/rb/hash19)
+[![Coverage Status](https://img.shields.io/coveralls/rcdexta/hash19.svg)](https://coveralls.io/r/rcdexta/hash19)
 
 ![Hash-19](https://s3-us-west-1.amazonaws.com/rcdexta/hash-19-droid.png)
 
