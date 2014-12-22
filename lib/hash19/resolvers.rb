@@ -16,9 +16,9 @@ module Hash19
         if association.present?
           klass = resolve_class(class_name.singularize)
           @hash19[opts[:alias] || name] = if type == :one
-                                            klass.send(:new, association).to_h(lazy: true)
+                                            klass.send(:new, association).to_h(true)
                                           elsif type == :many
-                                            association.map { |hash| klass.send(:new, hash).to_h(lazy: true) }
+                                            association.map { |hash| klass.send(:new, hash).to_h(true) }
                                           end
         else
           unless opts[:trigger]
