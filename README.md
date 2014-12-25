@@ -1,3 +1,4 @@
+
 # Hash19
 [![Build Status](https://travis-ci.org/rcdexta/hash19.svg)](https://travis-ci.org/rcdexta/hash19)
 [![Gem Version](https://badge.fury.io/rb/hash19.svg)](http://badge.fury.io/rb/hash19)
