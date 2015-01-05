@@ -22,7 +22,7 @@ module Hash19
                                           end
         else
           unless opts[:trigger]
-            puts "warning: Association:<#{name}> is not present in #{self.class.name}. Possible specify a trigger" 
+            # puts "warning: Association:<#{name}> is not present in #{self.class.name}. Probably a trigger is missing!" 
             next
           end
           puts "warning: Key:<#{opts[:using]}> not present in #{self.class.name}. Cannot map association:<#{name}>" unless @hash19.has_key? opts[:using]
