@@ -198,9 +198,9 @@ super_heroes.to_h #[{'name' => 'iron man', 'power' => 'none', 'weapon' => {'name
                   #{'name' => 'hulk', 'power' => 'bulk', 'weapon' => {'name' => 'hands', 'id' => 3}}
 ```
 
-Note that `injection` always overrides the association trigger since the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls. 
+Note that `injection` always overrides the association trigger since the former is eager loaded and latter is lazy loaded thus avoiding the `N+1` calls.
 
-One other important thing to remember is that all the injections will happen in parallel. Hash19 uses [eldritch](https://github.com/beraboris/eldritch) gem to trigger multiple injections concurrently.
+One other important thing to remember is that all the injections will happen in parallel. Hash19 uses [eldritch](https://github.com/beraboris/eldritch) gem to trigger multiple injections concurrently. If one inject is dependent on another or if you want the injections to happen in sequence add `async: false` to make calls synchronously.
 
 Please refer to the [tests](https://github.com/rcdexta/hash19/tree/master/spec/hash19) for more examples and documentation.
 

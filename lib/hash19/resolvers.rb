@@ -27,7 +27,7 @@ module Hash19
           end
           puts "warning: Key:<#{opts[:using]}> not present in #{self.class.name}. Cannot map association:<#{name}>" unless @hash19.has_key? opts[:using]
           if opts[:trigger] and @hash19.has_key? opts[:using]
-            @hash19[opts[:alias] || name] = LazyValue.new(-> { opts[:trigger].call(@hash19.delete(opts[:using])) }) 
+            @hash19[opts[:alias] || name] = LazyValue.new(-> { opts[:trigger].call(@hash19.delete(opts[:using])) })
           end
         end
       end
@@ -41,22 +41,11 @@ module Hash19
 
     def resolve_injections(hash)
       together do
-        self.class.injections.each do |opts|
-          async do
-            entries = JsonPath.new(opts[:at]).on(hash).flatten
-            ids = entries.map { |el| el[opts[:using]] }.compact
-            next unless ids.present?
-            to_inject = opts[:trigger].call(ids).map(&:with_indifferent_access)
-            key = opts[:as] || opts[:using].to_s.gsub(/_id$|Id$/, '')
-            entries.each do |entry|
-              id = entry.delete(opts[:using])
-              next unless id.present?
-              target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
-              entry[key] = target
-            end
-          end
+        async_injections.each do |opts|
+          async { call_and_inject(opts, hash) }
         end
       end
+      synchronous_injections.each { |opts| call_and_inject(opts, hash) }
     end
 
     def resolve_class(assoc_name)
@@ -67,6 +56,33 @@ module Hash19
           mod.const_get(class_name)
         rescue NameError
           raise("Class:<#{new_class}> not defined! Unable to resolve association:<#{assoc_name.downcase}>")
+        end
+      end
+    end
+
+    private
+
+    def async_injections
+      self.class.injections.select { |e| e[:async].nil? }
+    end
+
+    def synchronous_injections
+      self.class.injections.select { |e| e[:async] == false }
+    end
+
+    def call_and_inject(opts, hash)
+      entries = JsonPath.new(opts[:at]).on(hash).flatten
+      ids = entries.map { |el| el[opts[:using]] }.compact
+      return unless ids.present?
+      to_inject = opts[:trigger].call(ids).map(&:with_indifferent_access)
+      key = opts[:as] || opts[:using].to_s.gsub(/_id$|Id$/, '')
+      entries.each do |entry|
+        id = entry[opts[:using]]
+        next unless id.present?
+        target = to_inject.find { |el| el[opts[:reference] || opts[:using]] == id }
+        if target
+          entry.delete(opts[:using])
+          entry[key] = target
         end
       end
     end

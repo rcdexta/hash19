@@ -37,7 +37,7 @@ describe 'Injections' do
                                                  ])
     end
 
-    it "should not fail when no keys for injection present" do
+    it 'should not fail when no keys for injection present' do
       gru_team = SuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom'},
                                                          {name: 'Gelato'},
                                                          {name: 'Kanpai'}])
@@ -47,13 +47,38 @@ describe 'Injections' do
                                                  ])
     end
 
-    it "should only map associations with keys" do
+    it 'should only map associations with keys' do
       gru_team = SuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom', fruit_id: 1},
                                                          {name: 'Gelato'},
                                                          {name: 'Kanpai'}])
       expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom', 'eats' => {'id' => 1, 'name' => 'banana'}},
                                                                  {'name' => 'Gelato'},
                                                                  {'name' => 'Kanpai'}
+                                                 ])
+    end
+
+    class SuperDuperVillain < Testable
+      attribute :name
+      has_many :minions
+      inject at: '$.minions', using: :fruit_id, reference: :id, trigger: lambda { |ids| Fruit.find_all ids }, as: 'eats'
+      inject at: '$.minions..eats', using: :name, reference: :fruit_name, trigger: lambda { |names| Vitamin.find_all names }, as: 'vitamin', async: false
+    end
+
+    class Vitamin < Testable
+      attributes :has, :fruit_name
+
+      def self.find_all(names)
+        [{fruit_name: 'banana', has: 'D'}, {fruit_name: 'orange', has: 'E'}]
+      end
+    end
+
+    it 'should be to do injections synchronously' do
+      gru_team = SuperDuperVillain.new(name: 'Gru', minions: [{name: 'Poppadom', fruit_id: 1},
+                                                              {name: 'Gelato', fruit_id: 2},
+                                                              {name: 'Kanpai', fruit_id: 3}])
+      expect(gru_team.to_h).to eq('name' => 'Gru', 'minions' => [{'name' => 'Poppadom', 'eats' => {'id' => 1, 'vitamin' => {'fruit_name' => 'banana', 'has' => 'D'}}},
+                                                                 {'name' => 'Gelato', 'eats' => {'id' => 2, 'name' => 'apple'}},
+                                                                 {'name' => 'Kanpai', 'eats' => {'id' => 3, 'vitamin' => {'fruit_name' => 'orange', 'has' => 'E'}}}
                                                  ])
     end
 
