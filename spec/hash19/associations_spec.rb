@@ -30,7 +30,7 @@ describe 'Associations' do
       end
 
       expect { Computer::Laptop.new(model: 'MacBook Pro', year: 2013, keyboard: {keys: 101}) }.
-      to raise_error('Class:<Computer::Keyboard> not defined! Unable to resolve association:<keyboard>')
+          to raise_error('Class:<Computer::Keyboard> not defined! Unable to resolve association:<keyboard>')
     end
 
     it 'should support alternate key in payload for has_one' do
@@ -144,7 +144,7 @@ describe 'Associations' do
     it 'should be able to call the trigger on has_one association' do
       packet = UDPPacket.new(code: 500, error_id: 500)
       expect(packet.to_h).to eq('code' => 500, 'error_id' => 500, 'all_errors' => [{'error_id' => 500, 'desc' => 'fatal error'},
-       {'error_id' => 404, 'desc' => 'not found'}])
+                                                                                   {'error_id' => 404, 'desc' => 'not found'}])
     end
 
   end
@@ -157,7 +157,23 @@ describe 'Associations' do
       end
 
       jedi = Jedi.new(name: 'Obi Wan Kenobi')
-      expect(jedi.to_h).to eq({"name" => 'Obi Wan Kenobi'})
+      expect(jedi.to_h).to eq({'name' => 'Obi Wan Kenobi'})
+    end
+  end
+
+  context 'module and class with same name' do
+    module SecretAgentService
+      class SecretAgent < Testable
+        attributes :code
+        has_one :agency
+      end
+      class Agency < Testable
+        attributes :name
+      end
+    end
+    it 'should resolve class when association class and containing module have same name' do
+      mi6 = SecretAgentService::SecretAgent.new({code: '007', agency: {name: 'MI6'}})
+      expect(mi6.to_h).to eq({'code' => '007', 'agency' => {'name' => 'MI6'}})
     end
   end
 

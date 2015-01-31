@@ -50,7 +50,7 @@ module Hash19
 
     def resolve_class(assoc_name)
       full_class_name = self.class.name
-      new_class = full_class_name.gsub(full_class_name.demodulize, assoc_name)
+      new_class = construct_association_class full_class_name, assoc_name
       new_class.split('::').inject(Object) do |mod, class_name|
         begin
           mod.const_get(class_name)
@@ -61,6 +61,11 @@ module Hash19
     end
 
     private
+
+    def construct_association_class(parent, association)
+      *modules, class_name = parent.split('::')
+      (modules + [association]).join('::')
+    end
 
     def async_injections
       self.class.injections.select { |e| e[:async].nil? }
