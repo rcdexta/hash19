@@ -35,7 +35,8 @@ module Hash19
 
     def resolve_aliases
       self.class.aliases.each do |key, as|
-        @hash19[as] = @hash19.delete(key) if @hash19.has_key?(key)
+        @hash19[as] = @hash19[key] if @hash19.has_key?(key)
+        @hash19.delete(key) unless self.class.aliases.values.include?(key)
       end
     end
 

@@ -74,4 +74,15 @@ describe Hash19::Core do
     end
   end
 
+  context 'alias and key are same scenario' do
+    class Aliaser < Testable
+      attribute :me_too, key: :me
+      attribute :me, key: :thyself
+    end
+    it 'should be able to resolve alias' do
+      ap = Aliaser.new('thyself' => 1, 'me' => 2)
+      expect(ap.to_h).to eq('me' => 1, 'me_too' => 2)
+    end
+  end
+
 end
