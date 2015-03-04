@@ -20,6 +20,7 @@ module Hash19
           hash = payload.with_indifferent_access
           @hash19 = hash.slice(*self.class.keys)
           resolve_aliases if self.class.aliases.present?
+          resolve_transformers if self.class.transformers.present?
           resolve_has_one(hash) if self.class.one_assocs.present?
           resolve_has_many(hash) if self.class.many_assocs.present?
         end

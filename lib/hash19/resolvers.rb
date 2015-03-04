@@ -40,6 +40,16 @@ module Hash19
       end
     end
 
+    def resolve_transformers
+      self.class.transformers.each do |attribute, proc|
+        if proc.is_a?(Proc)
+          @hash19[attribute] = proc.call(@hash19[attribute])
+        else
+          raise "[Attribute: #{attribute}] The transform function should be a lambda!"
+        end
+      end
+    end
+
     def resolve_injections(hash)
       together do
         async_injections.each do |opts|

@@ -3,6 +3,7 @@ module Hash19
 
     attr_accessor :keys
     attr_accessor :aliases
+    attr_accessor :transformers
     attr_accessor :one_assocs
     attr_accessor :many_assocs
     attr_accessor :injections
@@ -18,6 +19,10 @@ module Hash19
         @aliases ||= {}
         @aliases[opts[:key]] = name
         add_attributes(opts[:key])
+      end
+      if opts.has_key?(:transform)
+        @transformers ||= {}
+        @transformers[name] = opts[:transform]
       end
     end
 
