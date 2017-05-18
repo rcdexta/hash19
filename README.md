@@ -87,7 +87,7 @@ To get started, include the Hash19 module in the target class and you are good.
 
 A detailed documentation of all features can be found below:
 
-###1. Whitelisting attributes
+1. Whitelisting attributes
 ```ruby
  class SuperHero 
 	 include Hash19
@@ -111,7 +111,7 @@ A detailed documentation of all features can be found below:
   ```
   Note that only the whitelisted attributes are accepted and keys can be aliased. The `to_h` method converts the native hash19 object into a ruby hash. 
   
-###2. Still a hash
+2. Still a hash
 The Hash19 object acts as a wrapper to Ruby Hash. All hash operations are supported by the wrapper. But, finally `to_h` should be called to retrieve the underlying hash.
 ``` ruby
  hero = SuperHero.new(name: "Flash", strength: "Speed", comic: "DC")
@@ -120,7 +120,7 @@ The Hash19 object acts as a wrapper to Ruby Hash. All hash operations are suppor
  hero.keys #["name", "strength", "universe", "nick_name"]
  hero.to_h #{"name"=>"Flash", "strength"=>"Speed", "universe"=>"DC", "nick_name"=>"Scarlet Speedster"}
 ```
-###3. Associations
+3. Associations
 One-to-one and One-to-many relationships are supported. All associations are lazy loaded unless present directly in the root JSON.
 ```ruby
 class Hashable
@@ -162,7 +162,7 @@ has_one :child, key: :offspring, alias: :junior
 ```
 
 
-###4. Bulk Injections
+4. Bulk Injections
 
 Left to itself with associations, when the root JSON is a large collection with none of the associations populated in the first place, there will be several triggers fired for each item in the collection. This is the HTTP equivalent of `N+1` in the ORM world. To avoid this, Hash19 supports association injections. Let's dive into an example:
 
