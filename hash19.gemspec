@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'coveralls'
 
-  spec.add_runtime_dependency 'jsonpath', '~> 0.5.6'
+  spec.add_runtime_dependency 'jsonpath', '~> 1.0.5'
   spec.add_runtime_dependency 'eldritch'
 
 end
